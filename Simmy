@@ -1,0 +1,84 @@
+-- [[ SIM HUB - Roblox Script ]] --
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Remotes = ReplicatedStorage:WaitForChild("Remotes")
+
+local SimHub = {
+    AutoBuy = false,
+    AutoBossManager = false,
+    TargetBosses = {"Coyote", "EvilMom", "Toji", "Decayer"}
+}
+
+-- =========================================================
+-- ฟังก์ชันที่ 1: ระบบซื้อของอัตโนมัติ (Auto Buy Shop)
+-- =========================================================
+function SimHub:BuyAllItems()
+    local buyRemote = Remotes:FindFirstChild("BuyAllShopRemote")
+    if buyRemote then
+        buyRemote:FireServer()
+        print("[SIM HUB] ทำการซื้อของทั้งหมดเรียบร้อยแล้ว")
+    else
+        warn("[SIM HUB] ไม่พบ BuyAllShopRemote")
+    end
+end
+
+-- =========================================================
+-- ฟังก์ชันที่ 2: ระบบจัดการห้องบอส (Boss Arena Controller)
+-- =========================================================
+-- 2.1 เข้าห้องบอสตามชื่อ
+function SimHub:EnterBossArena(bossName)
+    local enterRemote = Remotes:FindFirstChild("EnterBossArenaRemote")
+    if enterRemote then
+        enterRemote:FireServer(bossName)
+        print("[SIM HUB] เข้าห้องบอส: " .. tostring(bossName))
+    end
+end
+
+-- 2.2 ออกจากห้องบอส
+function SimHub:LeaveBossArena()
+    local leaveRemote = Remotes:FindFirstChild("LeaveBossArenaRemote")
+    if leaveRemote then
+        leaveRemote:FireServer()
+        print("[SIM HUB] ออกจากห้องบอสเรียบร้อย")
+    end
+end
+
+-- =========================================================
+-- ฟังก์ชันที่ 3: ระบบโจมตีบอส (Boss Damage & Auto Farm)
+-- =========================================================
+-- 3.1 โจมตีบอสระบุชื่อ
+function SimHub:AttackBoss(bossName)
+    local damageRemote = Remotes:FindFirstChild("WorldBossClickDamageRemote")
+    if damageRemote then
+        damageRemote:FireServer(bossName)
+    end
+end
+
+-- 3.2 โจมตีบอสทั้งหมดพร้อมกัน (All-in-One Attack)
+function SimHub:AttackAllBosses()
+    local damageRemote = Remotes:FindFirstChild("WorldBossClickDamageRemote")
+    if damageRemote then
+        for _, bossName in ipairs(self.TargetBosses) do
+            damageRemote:FireServer(bossName)
+        end
+    end
+end
+
+-- =========================================================
+-- ตัวอย่างการเรียกใช้งาน (เปิดใช้งานสคริปต์)
+-- =========================================================
+
+-- เรียกใช้ ฟังก์ชันที่ 1: ซื้อของ 1 ครั้ง
+SimHub:BuyAllItems()
+
+-- เรียกใช้ ฟังก์ชันที่ 2: เข้าห้องบอส Coyote
+SimHub:EnterBossArena("Coyote")
+
+-- เรียกใช้ ฟังก์ชันที่ 3: โจมตีบอสทั้งหมดต่อเนื่อง (Auto Loop)
+task.spawn(function()
+    SimHub.AutoBossManager = true
+    while SimHub.AutoBossManager do
+        SimHub:AttackAllBosses()
+        task.wait(0.1) -- ปรับความเร็วในการตี (วินาที)
+    end
+end)
